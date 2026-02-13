@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -198,7 +198,7 @@ function generateBuyerProfile() {
   };
 }
 
-export default function ResultPage() {
+function ResultContent() {
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [prices, setPrices] = useState<any>(null);
@@ -546,5 +546,19 @@ export default function ResultPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function ResultPage() {
+  return (
+    <Suspense fallback={
+      <div className="relative w-full h-screen bg-black flex items-center justify-center">
+        <div className="text-red-500" style={{ fontFamily: 'var(--font-geulseedang-goyo)' }}>
+          데이터 로딩 중...
+        </div>
+      </div>
+    }>
+      <ResultContent />
+    </Suspense>
   );
 }
