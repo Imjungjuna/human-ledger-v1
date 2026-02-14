@@ -203,13 +203,26 @@ function ResultContent() {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [prices, setPrices] = useState<any>(null);
   const [buyer, setBuyer] = useState<any>(null);
+  const [metadata, setMetadata] = useState<any>(null);
 
   useEffect(() => {
     const data: Record<string, string> = {};
+    let metadataData = null;
+    
     searchParams.forEach((value, key) => {
-      data[key] = value;
+      if (key === 'metadata') {
+        try {
+          metadataData = JSON.parse(value);
+        } catch (e) {
+          console.error('Failed to parse metadata', e);
+        }
+      } else {
+        data[key] = value;
+      }
     });
+    
     setFormData(data);
+    setMetadata(metadataData);
     
     const calculatedPrices = calculateOrganPrices(data);
     setPrices(calculatedPrices);
@@ -277,7 +290,7 @@ function ResultContent() {
   const rightVision = (0.8 + Math.random() * 0.4).toFixed(1);
 
   return (
-    <div className="relative w-full min-h-screen bg-black overflow-y-auto">
+    <div className="relative w-full min-h-screen bg-black" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
       {/* 배경 이미지 */}
       <Image 
         src="/background.png"
@@ -530,6 +543,121 @@ function ResultContent() {
                   </div>
                 </div>
               </div>
+
+              {/* 메타데이터 정보 */}
+              {metadata && (
+                <div className="border-0 p-3 sm:p-4 bg-black/30">
+                  <div className="text-red-500 text-lg sm:text-xl mb-3 sm:mb-4" style={{ fontFamily: 'var(--font-geulseedang-goyo)' }}>
+                    수집된 기기 정보
+                  </div>
+                  <div className="space-y-2 text-sm sm:text-base" style={{ fontFamily: 'var(--font-geulseedang-goyo)' }}>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-red-400">IP 주소:</span>
+                      <span className="text-red-500 font-mono">{metadata.ip || '수집 실패'}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-red-400">운영체제:</span>
+                      <span className="text-red-500">{metadata.os || 'Unknown'}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-red-400">브라우저:</span>
+                      <span className="text-red-500">{metadata.browser || 'Unknown'}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-red-400">기기 메모리:</span>
+                      <span className="text-red-500">{metadata.deviceMemory ? `${metadata.deviceMemory}GB` : 'Not available'}</span>
+                    </div>
+                    {metadata.battery && !metadata.battery.error && (
+                      <>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-red-400">배터리 잔량:</span>
+                          <span className="text-red-500">{metadata.battery.level}%</span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-red-400">충전 중:</span>
+                          <span className="text-red-500">{metadata.battery.charging ? '예' : '아니오'}</span>
+                        </div>
+                      </>
+                    )}
+                    {metadata.screen && (
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                        <span className="text-red-400">화면 해상도:</span>
+                        <span className="text-red-500">{metadata.screen.width} x {metadata.screen.height}</span>
+                      </div>
+                    )}
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-red-400">언어:</span>
+                      <span className="text-red-500">{metadata.language || 'Unknown'}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-red-400">타임존:</span>
+                      <span className="text-red-500">{metadata.timezone || 'Unknown'}</span>
+                    </div>
+                    {metadata.region && (
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                        <span className="text-red-400">지역:</span>
+                        <span className="text-red-500">{metadata.region}</span>
+                      </div>
+                    )}
+                    {metadata.city && (
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                        <span className="text-red-400">도시:</span>
+                        <span className="text-red-500">{metadata.city}</span>
+                      </div>
+                    )}
+                    {metadata.isp && (
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                        <span className="text-red-400">ISP:</span>
+                        <span className="text-red-500">{metadata.isp}</span>
+                      </div>
+                    )}
+                    {metadata.gps && !metadata.gps.error && (
+                      <>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0 mt-3 pt-3 border-t border-red-900/30">
+                          <span className="text-red-400 font-semibold">GPS 위치:</span>
+                          <span className="text-red-500"></span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-red-400">위도:</span>
+                          <span className="text-red-500 font-mono">{metadata.gps.latitude?.toFixed(6)}</span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-red-400">경도:</span>
+                          <span className="text-red-500 font-mono">{metadata.gps.longitude?.toFixed(6)}</span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-red-400">정확도:</span>
+                          <span className="text-red-500">{metadata.gps.accuracy?.toFixed(0)}m</span>
+                        </div>
+                        {metadata.gps.address && (
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                            <span className="text-red-400">주소:</span>
+                            <span className="text-red-500">{metadata.gps.address}</span>
+                          </div>
+                        )}
+                        {metadata.gps.city && (
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                            <span className="text-red-400">도시:</span>
+                            <span className="text-red-500">{metadata.gps.city}</span>
+                          </div>
+                        )}
+                        {metadata.gps.administrativeArea && (
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                            <span className="text-red-400">행정구역:</span>
+                            <span className="text-red-500">{metadata.gps.administrativeArea}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {metadata.gps && metadata.gps.error && (
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0 mt-3 pt-3 border-t border-red-900/30">
+                        <span className="text-red-400">GPS 위치:</span>
+                        <span className="text-red-500/60">수집 실패</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* 주의사항 */}
               <div className="border-0 p-3 bg-black/20">
